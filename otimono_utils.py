@@ -52,29 +52,17 @@ def lock_piece():
     game["piece"] = None
 
 def flood_fill(r, c, color, group):
-    """BFSを使って指定位置から同じ色の隣接タイルを探索"""
-    from collections import deque  # キュー構造を利用する
-
-    queue = deque([(r, c)])  # キューに開始位置を追加 --- (*1)
-    while queue:  # キューが空になるまで処理 --- (*2)
-        cur_r, cur_c = queue.popleft()  # キューから位置を取り出す --- (*3)
-        # 既に探索済み、範囲外、色が違う場合はスキップ
-        if (cur_r, cur_c) in group:  # 探索済みか
-            continue
-        if cur_r < 0 or cur_r >= ROWS:  # 範囲外か
-            continue
-        if cur_c < 0 or cur_c >= COLS:
-            continue
-        if game["board"][cur_r][cur_c] != color:  # 色が違うか
-            continue
-        # 現在位置をグループに追加 --- (*4)
-        group.add((cur_r, cur_c))        
-        # 上下左右の隣接セルをキューに追加 --- (*5)
-        for dr, dc in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
-            next_r, next_c = cur_r + dr, cur_c + dc
-            # 未探索の場合のみキューに追加 --- (*6)
-            if (next_r, next_c) not in group:
-                queue.append((next_r, next_c))
+    """再帰的に指定位置から同じ色の隣接タイルを探索"""  # --- (*8)
+    if (r, c) in group:  # 既に探索済みか
+        return
+    if r < 0 or r >= ROWS or c < 0 or c >= COLS:  # 範囲外か
+        return
+    if game["board"][r][c] != color:  # 色が違うか
+        return
+    group.add((r, c))  # 指定位置をグループに追加
+    # 引き続き上下左右を再帰的に探索 --- (*9)
+    for dr, dc in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
+        flood_fill(r + dr, c + dc, color, group)  # 再帰呼び出し
 
 def find_groups():
     """隣接する同色タイルを数えて消去対象として返す"""  # --- (*10)
